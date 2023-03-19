@@ -65,7 +65,6 @@ function initMarkers() {
       return L.divIcon({
         className: 'cluster-pharm-icon', 
         iconSize: [80, 80], 
-        iconAnchor: [-40, -40],
         html: '<b>' + cluster.getChildCount() + '</b>' 
       });
     },
