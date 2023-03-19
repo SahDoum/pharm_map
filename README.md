@@ -32,7 +32,7 @@ img -- иконки
 * Привязать к нему карту
 * Получить API-key: Credential->Projects->YOUR_PROJECT->Create Credential->API Key->
 * Настроить ограничения по сайту: Key->Edit API Key->Set an application restriction->Website->YOURWEBSITE
-* Настроить ограничения по API: API RESTRICTION ->Rescrict Key-> Geocoding API & Maps JavaScript API
+* Настроить ограничения по API: (UPD:) Не очень ясно какие сервисы придется использовать, так что настраивать не нужно и даже вредно.
 * Используйте ключ в работе: поставьте в index.html в подключении к гугл-апи и в app.js в GoogleProvider
 
 # ToDo:
