@@ -44,7 +44,9 @@ function initMap(){
 
     myMap.on('popupclose', function(e) {
       var marker = e.popup._source;
-      marker._icon.style.display = '';
+      if (marker._icon) {
+        marker._icon.style.display = '';
+      }
     });
 }
 
