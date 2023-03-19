@@ -46,8 +46,6 @@ function initMap(){
       var marker = e.popup._source;
       marker._icon.style.display = '';
     });
-
-    return;
 }
 
 function initMarkers() {
@@ -125,14 +123,20 @@ const goToCoords = (coords) => {
 
 // You can use geoProvider for suggestions:
 // const provider = new GeoSearch.OpenStreetMapProvider();
+// const provider = new GeoSearch.GoogleProvider({ apiKey: '__', region: "__", language: "__"});
 // const results = await provider.search({ query: suggestInput.value });
 // displaySuggestion(...)
 
 
+const suggestInput = document.getElementById('map-input');
 const autocompleteService = new google.maps.places.AutocompleteService();
+// const autocomplete = new google.maps.places.Autocomplete(suggestInput, {});
+// autocomplete.addListener("place_changed", () => {
+//   const place = autocomplete.getPlace();
+//   console.log(place);
+// });
 const placesService = new google.maps.places.PlacesService(document.createElement('div'));
 
-const suggestInput = document.getElementById('map-input');
 const suggestList = document.getElementById('suggest-list');
 let currentTimeoutId = null;
 
@@ -152,9 +156,19 @@ function handleInput(event) {
 
   // Wait for 500ms to prevent previous query search on new input
   currentTimeoutId = setTimeout(async () => {
+    // const results = await provider.search({ query: suggestInput.value });
+    // console.log(results);
+    // results.forEach((result) => {
+    //   var description = result.label;
+    //   var lat = result.y;
+    //   var lng = result.x;
+    //   displaySuggestion(description, [lat, lng]);
+    // });
+    if (suggestInput.value.length < 3) {
+      return;
+    }
     autocompleteService.getPlacePredictions({
       input: suggestInput.value,
-      types: ['geocode']
     }, (predictions, status) => {
       if (status !== 'OK') {
         console.error(`AutocompleteService error: ${status}`);
@@ -164,17 +178,7 @@ function handleInput(event) {
       predictions.forEach( (prediction) => {
         const placeId = prediction.place_id;
         placesService.getDetails({ placeId: placeId }, (placeResult, status) => {
-          // Check if the PlaceService request was successful
-          if (status !== 'OK') {
-            console.error(`PlaceService error: ${status}`);
-            return;
-          }
-
-          // Extract the latitude and longitude coordinates from the place's geometry location
-          const lat = placeResult.geometry.location.lat();
-          const lng = placeResult.geometry.location.lng();
-
-          displaySuggestion(prediction.description, [lat, lng]);
+          displaySuggestion(prediction.description, placeId);
         });
       });  
     });
@@ -204,15 +208,33 @@ function handleClickOutside(event) {
   }
 }
 
-function displaySuggestion(description, coords) {
+function displaySuggestion(description, placeId) {
   const li = document.createElement('li');
   li.classList.add("list-items");
   li.style.cursor = "pointer";
   li.innerText = description;
   li.addEventListener("click", () => {
-    goToCoords(coords)
     suggestInput.value = description;
     suggestList.style.display = 'none';
+
+    placesService.getDetails({ placeId: placeId}, (placeResult, status) => {
+      // Check if the PlaceService request was successful
+      if (status !== 'OK') {
+        console.error(`PlaceService error: ${status}`);
+        return;
+      }
+
+      var bounds = [
+        [
+        placeResult.geometry.viewport.getNorthEast().lat(),
+        placeResult.geometry.viewport.getNorthEast().lng()
+        ],[
+        placeResult.geometry.viewport.getSouthWest().lat(),
+        placeResult.geometry.viewport.getSouthWest().lng()
+      ]];
+      goToBounds(bounds);
+    });
+
   });
 
   suggestList.appendChild(li);
